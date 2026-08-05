@@ -21,10 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-The MIT license above covers the addon's own code (Lua + build scripts).
+The MIT license above covers the addon's own code.
 
-Best-in-slot recommendations are computed by Bisbeard's optimizer
-(https://coa.bisbeard.com), used with the author's permission. SmartBiS does not
-redistribute Bisbeard's source code. World of Warcraft item data is © Blizzard
-Entertainment. SmartBiS is a fan-made companion and is not affiliated with
-Bisbeard, Ascension, Conquest of Azeroth, or Blizzard Entertainment.
+World of Warcraft item data is © Blizzard Entertainment. SmartBiS is a fan-made
+companion and is not affiliated with Ascension, Conquest of Azeroth, or Blizzard
+Entertainment.

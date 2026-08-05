@@ -2,22 +2,21 @@
 
 **Best-in-slot gear + enchants, in-game, for Conquest of Azeroth (CoA / Ascension 3.3.5a).**
 
-SmartBiS brings [Bisbeard](https://coa.bisbeard.com)'s gear optimizer *inside the
-game*. It runs Bisbeard's own solver offline against the CoA item database and
-bakes the results into the addon, so you get the exact same optimized loadout —
-per class, spec, and content phase — without alt-tabbing to the website.
+SmartBiS shows the optimized best-in-slot loadout for your character — per class,
+spec, and content phase — right inside the game. No more alt-tabbing to a website
+to check what to gear for.
 
-> Bisbeard is the source of truth. SmartBiS just carries that information into
-> your client. Built with the Bisbeard author's permission.
+> ⚠️ **Early version.** SmartBiS is under active development — expect rough edges
+> and bugs. Reports and suggestions are very welcome (see below)!
 
 ## Features
 
-- **Exact Bisbeard loadouts** — the real solver output, for all 21 classes / 70
-  specs, across every database phase (Pre-Raid → Phase 5) and PvE / PvP.
+- **Optimized loadouts** for all 21 classes / 70 specs, across every phase
+  (Pre-Raid → Phase 5) and PvE / PvP.
 - **Auto-detects your class & spec** — `/sbis` opens straight to your character.
-- **Recommended enchant per slot** — also from Bisbeard's solver.
-- **"Where it drops"** — the source of every item, right under it.
-- **Have / need check** — `v` = equipped, `b` = in your bags, `-` = missing,
+- **Recommended enchant per slot**.
+- **"Where it drops"** — the source of every item, right on its card.
+- **Have / need check** — green = equipped, gold = in your bags, gray = missing,
   with an `Equipped X/Y` counter.
 - **Tooltip anywhere** — hover any item (drop, bag, chat link, AH) and it tells
   you if it's BiS for your spec, and in which phases.
@@ -26,39 +25,34 @@ per class, spec, and content phase — without alt-tabbing to the website.
 ## Install
 
 1. Download the latest release and extract it.
-2. Copy the `SmartBiS` folder into
-   `World of Warcraft\Interface\AddOns\`.
+2. Copy the `SmartBiS` folder into `World of Warcraft\Interface\AddOns\`.
 3. Restart the client and enable **SmartBiS** on the character screen.
 
 ## Usage
 
 - `/sbis` — open/close, on your current spec.
 - **Spec** button — cycle your class's specs (or `/sbis Felsworn|Tyrant`).
-- **PvE / PvP** and **Phase** buttons — switch the database view.
+- **PvE / PvP** and **Phase** buttons — switch the view.
 - Left-click the minimap button to open; drag it to move.
 
-## Updating the data (maintainers)
+## Bugs & suggestions
 
-The addon data (`SmartBiS_DB.lua`) is generated from Bisbeard. Regenerate it
-whenever Bisbeard updates its data or algorithm — no addon code changes needed:
+Found a bug or have an idea? Please open an issue:
+**[github.com/cccarv82/SmartBiS/issues](https://github.com/cccarv82/SmartBiS/issues)**
+→ *New issue*.
 
-```bash
-node tools/build_engine.mjs   # downloads + bundles Bisbeard's solver (Node 18+)
-node tools/export_bis.mjs     # runs it, writes SmartBiS_DB.lua
-```
-
-`tools/build_engine.mjs` downloads Bisbeard's current web bundle at build time
-(it is **not** stored in this repo — it is their code). `tools/export_bis.mjs`
-runs that solver for every class/spec/phase and emits the Lua database.
+When reporting a bug, it helps to include:
+- Your **class and spec**, and the **PvE/PvP + phase** selected.
+- What you expected vs. what happened.
+- Any Lua error text, and a screenshot if you can.
 
 ## Credits
 
-- **[Bisbeard](https://coa.bisbeard.com)** — the gear optimizer and data behind
-  every recommendation. Used with permission.
-- Item data © Blizzard Entertainment.
+- World of Warcraft item data © Blizzard Entertainment.
 
-Not affiliated with Bisbeard, Ascension, Conquest of Azeroth, or Blizzard.
+SmartBiS is a fan-made companion and is not affiliated with Ascension, Conquest
+of Azeroth, or Blizzard Entertainment.
 
 ## License
 
-[MIT](LICENSE) for the addon code. See LICENSE for data/attribution notes.
+[MIT](LICENSE).
