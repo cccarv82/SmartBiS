@@ -9,9 +9,7 @@ to check what to gear for.
 > ⚠️ **Early version.** SmartBiS is under active development — expect rough edges
 > and bugs. Reports and suggestions are very welcome (see below)!
 
-<!-- 📸 SCREENSHOT: replace the line below with your image.
-     See "Adding a screenshot" at the bottom of this file for how to get the URL. -->
-![SmartBiS in-game](https://via.placeholder.com/700x600?text=SmartBiS+screenshot+coming+soon)
+![SmartBiS in-game](https://github.com/user-attachments/assets/244c8000-bc66-4ea5-b8f3-90322a92cbc3)
 
 ## Features
 
