@@ -9,7 +9,9 @@ to check what to gear for.
 > ⚠️ **Early version.** SmartBiS is under active development — expect rough edges
 > and bugs. Reports and suggestions are very welcome (see below)!
 
-![SmartBiS in-game](https://github.com/user-attachments/assets/244c8000-bc66-4ea5-b8f3-90322a92cbc3)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/244c8000-bc66-4ea5-b8f3-90322a92cbc3" alt="SmartBiS in-game" width="720">
+</p>
 
 ## Features
 
