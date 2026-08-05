@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: SmartBiS
+## Notes: In-game BiS gear lists (PvE + PvP) per class|spec, sourced from Bisbeard.
+## Author: Carlos
+## Version: 1.0.0
+## SavedVariables: SmartBiSSaved
+
+SmartBiS_DB.lua
+SmartBiS.lua
