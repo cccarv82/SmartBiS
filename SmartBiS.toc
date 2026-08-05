@@ -2,7 +2,7 @@
 ## Title: SmartBiS
 ## Notes: In-game BiS gear lists (PvE + PvP) per class|spec, sourced from Bisbeard.
 ## Author: Carlos
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: SmartBiSSaved
 
 SmartBiS_DB.lua

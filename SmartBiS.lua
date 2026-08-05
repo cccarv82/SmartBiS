@@ -147,8 +147,7 @@ function SmartBiS_Refresh()
   local mode = SmartBiSSaved.mode or "pve"
   local phase = SmartBiSSaved.phase or 0
   f.modeBtn:SetText(mode == "pvp" and "PvP" or "PvE")
-  f.phaseBtn:SetText(PHASE_LABEL[phase] or "?")
-  if mode == "pvp" then f.phaseBtn:Hide() else f.phaseBtn:Show() end
+  f.phaseBtn:SetText(PHASE_LABEL[phase] or "?")   -- phases apply to PvP too
   f.specBtn:SetText(key and key:gsub("^.-|", "") or "Spec")
 
   local body = f.body; body:Clear()
@@ -161,10 +160,11 @@ function SmartBiS_Refresh()
     return
   end
 
-  local tag = (mode == "pvp") and "  |cffff5555PvP|r" or ("  |cff88ccff" .. (PHASE_LABEL[phase] or "") .. "|r")
-  f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r" .. tag)
+  local col = (mode == "pvp") and "|cffff8888" or "|cff88ccff"
+  f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r  " .. col .. (mode == "pvp" and "PvP · " or "") .. (PHASE_LABEL[phase] or "") .. "|r")
 
-  local slots = (mode == "pvp") and data.pvp or (data.pve and data.pve[phase])
+  local tbl = (mode == "pvp") and data.pvp or data.pve
+  local slots = tbl and tbl[phase]
   if not slots then body:AddMessage("No data."); return end
 
   local equipped, bags = ownedSets()
@@ -217,7 +217,9 @@ local function buildLookup(key)
   if data.pve then
     for p = 0, 5 do local s = data.pve[p]; if s then for slot, it in pairs(s) do add(it[1], slot, p) end end end
   end
-  if data.pvp then for slot, it in pairs(data.pvp) do add(it[1], slot, nil, true) end end
+  if data.pvp then
+    for p = 0, 5 do local s = data.pvp[p]; if s then for slot, it in pairs(s) do add(it[1], slot, nil, true) end end end
+  end
 end
 
 local function tooltipInfo(e)
