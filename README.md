@@ -9,6 +9,10 @@ to check what to gear for.
 > ⚠️ **Early version.** SmartBiS is under active development — expect rough edges
 > and bugs. Reports and suggestions are very welcome (see below)!
 
+<!-- 📸 SCREENSHOT: replace the line below with your image.
+     See "Adding a screenshot" at the bottom of this file for how to get the URL. -->
+![SmartBiS in-game](https://via.placeholder.com/700x600?text=SmartBiS+screenshot+coming+soon)
+
 ## Features
 
 - **Optimized loadouts** for all 21 classes / 70 specs, across every phase
@@ -48,11 +52,21 @@ When reporting a bug, it helps to include:
 
 ## Credits
 
-- World of Warcraft item data © Blizzard Entertainment.
-
 SmartBiS is a fan-made companion and is not affiliated with Ascension, Conquest
 of Azeroth, or Blizzard Entertainment.
 
 ## License
 
 [MIT](LICENSE).
+
+<!-- ============================================================
+Adding a screenshot (for the maintainer):
+  1. Go to github.com/cccarv82/SmartBiS/issues → "New issue" (do NOT submit it).
+  2. Drag your screenshot image into the comment box. GitHub uploads it and
+     inserts a line like:  ![](https://github.com/user-attachments/assets/xxxx)
+  3. Copy that URL and put it in the image line near the top of this file
+     (README.public.md, in the private SmartBiS-dev repo), e.g.:
+        ![SmartBiS in-game](https://github.com/user-attachments/assets/xxxx)
+  4. Commit + push in SmartBiS-dev → the CI republishes and the image shows on
+     the public README. (Don't edit the public README directly — the CI overwrites it.)
+============================================================ -->
