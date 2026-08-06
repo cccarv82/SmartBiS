@@ -52,8 +52,10 @@ When reporting a bug, it helps to include:
 
 ## Credits
 
-SmartBiS is a fan-made companion and is not affiliated with Ascension, Conquest
-of Azeroth, or Blizzard Entertainment.
+- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)** — used with the author's permission.
+
+SmartBiS is a fan-made companion and is not affiliated with Bisbeard, Ascension,
+Conquest of Azeroth, or Blizzard Entertainment.
 
 ## License
 
