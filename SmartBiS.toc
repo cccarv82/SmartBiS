@@ -1,9 +1,14 @@
 ## Interface: 30300
 ## Title: SmartBiS
-## Notes: In-game best-in-slot gear + enchants (PvE + PvP) per class and spec.
+## Notes: In-game best-in-slot gear + enchants (PvE + PvP) per class and spec, with a custom stat-weights editor.
 ## Author: Carlos
-## Version: 1.0.10
+## Version: 1.1.0
 ## SavedVariables: SmartBiSSaved
 
 SmartBiS_DB.lua
+SmartBiS_Weights.lua
+SmartBiS_Pool.lua
+SmartBiS_EngineData.lua
+SmartBiS_Cands.lua
+SmartBiS_Engine.lua
 SmartBiS.lua

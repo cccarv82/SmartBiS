@@ -5,7 +5,8 @@
 local COL1 = { "Head", "Neck", "Shoulders", "Back", "Chest", "Wrists", "Main Hand", "Off Hand" }
 local COL2 = { "Hands", "Waist", "Legs", "Feet", "Finger 1", "Finger 2", "Trinket 1", "Trinket 2", "Ranged" }
 
-local PHASE_LABEL = { [0] = "Pre-Raid", [1] = "Phase 1", [2] = "Phase 2", [3] = "Phase 3", [4] = "Phase 4", [5] = "Phase 5" }
+-- CoA phase → content (from the site's DATABASE selector): raids are cumulative.
+local PHASE_LABEL = { [0] = "Pre-Raid", [1] = "P1: Zul'Gurub", [2] = "P2: Molten Core", [3] = "P3: Blackwing Lair", [4] = "P4: Ahn'Qiraj", [5] = "P5: Naxxramas" }
 local INV_SLOTS = { 1, 2, 3, 15, 5, 9, 10, 6, 7, 8, 11, 12, 13, 14, 16, 17, 18 }
 local Q = {
   Poor = "ff9d9d9d", Common = "ffffffff", Uncommon = "ff1eff00", Rare = "ff0070dd",
@@ -81,6 +82,21 @@ local function styleButton(b)
   return b
 end
 
+-- Custom-weights recompute (M2): run the in-game engine and map its gear to card tuples.
+-- Endgame only (candidate pool is all-phase, PvE). Returns {slot = {id,name,ver,set,source,...}} or nil.
+local ENGINE_SLOTS = { "Head", "Neck", "Shoulders", "Back", "Chest", "Wrists", "Hands", "Waist", "Legs", "Feet", "Finger 1", "Finger 2", "Trinket 1", "Trinket 2", "Main Hand", "Off Hand", "Ranged" }
+local function recomputeSlots(key, weights, phase, mode)
+  if not (SmartBiS_Solve and SmartBiS_Cands and SmartBiS_Cands[key]) then return nil end
+  local ok, gear = pcall(SmartBiS_Solve, key, weights, phase, mode)
+  if not ok or type(gear) ~= "table" then return nil end
+  local out = {}
+  for _, slot in ipairs(ENGINE_SLOTS) do
+    local it = gear[slot]
+    if it then out[slot] = { it.id, it.n, "", it.set or "", it.src or "", "", "", it.q or "", it.ic or "" } end
+  end
+  return out
+end
+
 ----------------------------------------------------------------------
 -- Card widget (300x52)
 ----------------------------------------------------------------------
@@ -141,6 +157,86 @@ local function updateCard(c, slot, it, eq, bag)
 end
 
 ----------------------------------------------------------------------
+-- Stat-weights editor (M2): per-spec custom weights, saved in SmartBiSSaved.weights, with reset.
+----------------------------------------------------------------------
+local editor
+-- canonical ordered list of every stat that appears in any spec's default weights (shown in full,
+-- even when 0, so the user can weight anything). Computed once from SmartBiS_DefaultWeights.
+local ALL_STATS
+local function allStats()
+  if ALL_STATS then return ALL_STATS end
+  local seen = {}
+  for _, w in pairs(SmartBiS_DefaultWeights or {}) do
+    for k in pairs(w) do if k ~= "role" then seen[k] = true end end
+  end
+  ALL_STATS = {}
+  for k in pairs(seen) do ALL_STATS[#ALL_STATS + 1] = k end
+  table.sort(ALL_STATS)
+  return ALL_STATS
+end
+
+local function populateEditor(key)
+  local ed = editor; if not ed or not key then return end
+  local def = (SmartBiS_DefaultWeights and SmartBiS_DefaultWeights[key]) or {}
+  local cur = (SmartBiSSaved.weights and SmartBiSSaved.weights[key]) or def
+  local stats = allStats()
+  for _, r in ipairs(ed.rows) do r:Hide() end
+  local isCustom = SmartBiSSaved.weights and SmartBiSSaved.weights[key] ~= nil
+  ed.sub:SetText(key:gsub("^.-|", "") .. (isCustom and "  |cff00ff88(custom)|r" or "  |cff888888(default)|r"))
+  local y = -56
+  for i, stat in ipairs(stats) do
+    local r = ed.rows[i]
+    if not r then
+      r = CreateFrame("Frame", nil, ed); r:SetSize(204, 20)
+      r.lbl = r:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"); r.lbl:SetPoint("LEFT", 6, 0); r.lbl:SetJustifyH("LEFT")
+      local eb = CreateFrame("EditBox", nil, r)   -- themed (no default InputBoxTemplate look)
+      eb:SetSize(58, 18); eb:SetPoint("RIGHT", -6, 0); eb:SetAutoFocus(false); eb:SetMaxLetters(8)
+      eb:SetFontObject("GameFontHighlightSmall"); eb:SetJustifyH("CENTER"); eb:SetTextInsets(4, 4, 0, 0)
+      eb:SetBackdrop(FLAT_BD); eb:SetBackdropColor(0.05, 0.05, 0.07, 1); eb:SetBackdropBorderColor(T.border[1], T.border[2], T.border[3], 1)
+      eb:SetTextColor(T.gold[1], T.gold[2], T.gold[3])
+      eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+      eb:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+      eb:SetScript("OnEditFocusGained", function(self) self:SetBackdropBorderColor(T.gold[1], T.gold[2], T.gold[3], 1); self:HighlightText() end)
+      eb:SetScript("OnEditFocusLost", function(self) self:SetBackdropBorderColor(T.border[1], T.border[2], T.border[3], 1); self:HighlightText(0, 0) end)
+      r.eb = eb; ed.rows[i] = r
+    end
+    r.stat = stat
+    r.lbl:SetText("|cffcfcfcf" .. stat .. "|r")
+    r.eb:SetText(tostring(cur[stat] or 0))
+    r:ClearAllPoints(); r:SetPoint("TOPLEFT", ed, "TOPLEFT", 14, y); r:Show()
+    y = y - 21
+  end
+end
+
+local function buildEditor(parent)
+  if editor then return editor end
+  local ed = CreateFrame("Frame", nil, parent)
+  ed:SetSize(232, 634); ed:SetPoint("TOPLEFT", parent, "TOPRIGHT", 8, 0); ed:SetFrameStrata("DIALOG")
+  ed:SetBackdrop(DARK_BD); ed:SetBackdropColor(T.bg[1], T.bg[2], T.bg[3], T.bg[4]); ed:SetBackdropBorderColor(T.border[1], T.border[2], T.border[3], 1)
+  local h = ed:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge"); h:SetPoint("TOP", 0, -14); h:SetText("Stat Weights"); h:SetTextColor(T.gold[1], T.gold[2], T.gold[3])
+  ed.sub = ed:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall"); ed.sub:SetPoint("TOP", 0, -36)
+  ed.rows = {}
+  local apply = styleButton(CreateFrame("Button", nil, ed)); apply:SetSize(100, 24); apply:SetPoint("BOTTOMLEFT", 12, 12); apply:SetText("Apply")
+  apply:SetScript("OnClick", function()
+    local key = SmartBiSSaved.spec; if not key then return end
+    local w = {}
+    for _, r in ipairs(ed.rows) do if r:IsShown() then w[r.stat] = tonumber(r.eb:GetText()) or 0 end end
+    local def = (SmartBiS_DefaultWeights and SmartBiS_DefaultWeights[key]) or {}
+    for k, v in pairs(def) do if k ~= "role" and w[k] == nil then w[k] = v end end
+    SmartBiSSaved.weights = SmartBiSSaved.weights or {}; SmartBiSSaved.weights[key] = w
+    populateEditor(key); SmartBiS_Refresh()
+  end)
+  local reset = styleButton(CreateFrame("Button", nil, ed)); reset:SetSize(100, 24); reset:SetPoint("BOTTOMRIGHT", -12, 12); reset:SetText("Default")
+  reset:SetScript("OnClick", function()
+    local key = SmartBiSSaved.spec; if not key then return end
+    if SmartBiSSaved.weights then SmartBiSSaved.weights[key] = nil end
+    populateEditor(key); SmartBiS_Refresh()
+  end)
+  editor = ed
+  return ed
+end
+
+----------------------------------------------------------------------
 local win
 local manualSpec = false
 local function ensureWindow()
@@ -160,8 +256,15 @@ local function ensureWindow()
   local close = CreateFrame("Button", nil, f); close:SetSize(20, 20); close:SetPoint("TOPRIGHT", -8, -8)
   styleButton(close); close:SetText("x"); close:SetScript("OnClick", function() f:Hide() end)
 
-  -- button group centered: total width 160+6+70+6+104 = 346, half = 173
-  local spec = styleButton(CreateFrame("Button", nil, f)); spec:SetSize(160, 22); spec:SetPoint("TOPLEFT", f, "TOP", -173, -38)
+  local wbtn = CreateFrame("Button", nil, f); wbtn:SetSize(72, 20); wbtn:SetPoint("TOPRIGHT", close, "TOPLEFT", -6, 0)
+  styleButton(wbtn); wbtn:SetText("Weights")
+  wbtn:SetScript("OnClick", function()
+    local ed = buildEditor(f)
+    if ed:IsShown() then ed:Hide() else populateEditor(SmartBiSSaved.spec); ed:Show() end
+  end)
+
+  -- button group centered: total width 160+6+70+6+156 = 398, half = 199
+  local spec = styleButton(CreateFrame("Button", nil, f)); spec:SetSize(160, 22); spec:SetPoint("TOPLEFT", f, "TOP", -199, -38)
   spec:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   spec:SetScript("OnClick", function(_, button)
     local key = SmartBiSSaved.spec
@@ -178,7 +281,8 @@ local function ensureWindow()
   mode:SetScript("OnClick", function() SmartBiSSaved.mode = (SmartBiSSaved.mode == "pvp") and "pve" or "pvp"; SmartBiS_Refresh() end)
   f.modeBtn = mode
 
-  local phase = styleButton(CreateFrame("Button", nil, f)); phase:SetSize(104, 22); phase:SetPoint("LEFT", mode, "RIGHT", 6, 0)
+  local phase = styleButton(CreateFrame("Button", nil, f)); phase:SetSize(156, 22); phase:SetPoint("LEFT", mode, "RIGHT", 6, 0)
+  phase.txt:SetFontObject("GameFontNormalSmall")   -- longer phase labels (e.g. "P3: Blackwing Lair")
   phase:RegisterForClicks("LeftButtonUp", "RightButtonUp")
   phase:SetScript("OnClick", function(_, button)
     local p = SmartBiSSaved.phase or 0
@@ -214,7 +318,23 @@ function SmartBiS_Refresh()
 
   local tbl = (mode == "pvp") and data.pvp or data.pve
   local slots = tbl and tbl[phase]
+
+  -- custom weights → recompute BiS live via the in-game engine (respects spec, phase and mode)
+  local custom = SmartBiSSaved.weights and SmartBiSSaved.weights[key]
+  if custom then
+    local rec = recomputeSlots(key, custom, phase, mode)
+    if rec then
+      slots = rec
+      f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r  " .. col .. (mode == "pvp" and "PvP · " or "") .. (PHASE_LABEL[phase] or "") .. "|r  |cff00ff88custom|r")
+    end
+  end
+
   if not slots then f.footer:SetText("No data."); return end
+
+  -- a two-handed weapon fills both hands (Main Hand == Off Hand); show it once, blank the Off Hand
+  if slots["Main Hand"] and slots["Off Hand"] and slots["Main Hand"][1] == slots["Off Hand"][1] then
+    slots = setmetatable({ ["Off Hand"] = false }, { __index = slots })
+  end
 
   local eq, bag = ownedSets()
   local eqN, ownN, total = 0, 0, 0
