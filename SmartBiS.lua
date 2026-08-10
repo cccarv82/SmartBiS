@@ -5,7 +5,7 @@
 local COL1 = { "Head", "Neck", "Shoulders", "Back", "Chest", "Wrists", "Main Hand", "Off Hand" }
 local COL2 = { "Hands", "Waist", "Legs", "Feet", "Finger 1", "Finger 2", "Trinket 1", "Trinket 2", "Ranged" }
 
--- CoA phase → content (from the site's DATABASE selector): raids are cumulative.
+-- CoA phase → content: raids are cumulative.
 local PHASE_LABEL = { [0] = "Pre-Raid", [1] = "P1: Zul'Gurub", [2] = "P2: Molten Core", [3] = "P3: Blackwing Lair", [4] = "P4: Ahn'Qiraj", [5] = "P5: Naxxramas" }
 local INV_SLOTS = { 1, 2, 3, 15, 5, 9, 10, 6, 7, 8, 11, 12, 13, 14, 16, 17, 18 }
 local Q = {

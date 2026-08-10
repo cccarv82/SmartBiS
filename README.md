@@ -15,6 +15,9 @@ to check what to gear for.
 
 ## Features
 
+- **⭐ Custom Stat Weights (new!)** — click **Weights** to set how much you value each
+  stat, and your best-in-slot list recalculates live, right in the game. Saved per
+  character; one click on **Default** brings back the standard weights.
 - **Optimized loadouts** for all 21 classes / 70 specs, across every phase
   (Pre-Raid → Phase 5) and PvE / PvP.
 - **Auto-detects your class & spec** — `/sbis` opens straight to your character.
@@ -37,6 +40,8 @@ to check what to gear for.
 - `/sbis` — open/close, on your current spec.
 - **Spec** button — cycle your class's specs (or `/sbis Felsworn|Tyrant`).
 - **PvE / PvP** and **Phase** buttons — switch the view.
+- **Weights** button — open the stat-weights editor. Type your values, hit **Apply** to
+  recalculate, or **Default** to reset.
 - Left-click the minimap button to open; drag it to move.
 
 ## Bugs & suggestions

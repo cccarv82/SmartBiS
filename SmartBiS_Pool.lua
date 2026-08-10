@@ -1,4 +1,4 @@
--- SmartBiS_Pool.lua — AUTO-GENERATED (tools/gen_lua_data.mjs). Eligible candidate items.
+-- SmartBiS_Pool.lua — AUTO-GENERATED. Eligible candidate items.
 SmartBiS_Items = {
 [1]={id=1659479,n="Embrace of the Lycan",sl="Head",ty="Leather",q="Epic",ic="Interface\\Icons\\Ability_Mount_WhiteDireWolf",st={agility=20,stamina=20,attackPower=34,critRating=14,armor=158},src="Zul'Farrak - Chief Ukorz Sandscalp",ph=1},
 [2]={id=249329,n="Tattered Leather Hood",sl="Head",ty="Leather",q="Epic",ic="Interface\\Icons\\INV_Helmet_41",st={agility=26,stamina=18,attackPower=26,hitRating=10,armor=158},src="Scholomance - Trash Mobs",ph=1},

@@ -1,32 +1,31 @@
--- SmartBiS_Engine.lua — in-game clean-room BiS solver (M2). Recomputes endgame BiS live for
--- CUSTOM stat weights, using the bundled candidate pool (SmartBiS_Items/_Cands) + tables
--- (SmartBiS_Affix/_Styles/_Prof/_SetBonus). Clean-room port of tools/scorer_gt + setbonus + solve.
--- Public: SmartBiS_Solve(specKey, weights) -> { [gearSlot] = item }, endgame (all phases) only.
+-- SmartBiS_Engine.lua — in-game BiS solver. Recomputes best-in-slot live for CUSTOM stat weights,
+-- using the bundled candidate pool (SmartBiS_Items/_Cands) + tables (SmartBiS_Affix/_Styles/_Prof/
+-- _SetBonus). Public: SmartBiS_Solve(specKey, weights, phase, mode) -> { [gearSlot] = item }.
 
 local Items, Affix, Styles, Prof, SetBonus  -- resolved lazily (load order safe)
 
--- weight lookup with hit/crit rating name-aliasing (site Zt/y1)
+-- weight lookup with hit/crit rating name-aliasing
 local function weightFor(w, stat)
   if stat == "meleeHitRating" or stat == "rangedHitRating" or stat == "spellHitRating" then return w.hitRating or 0 end
   if stat == "meleeCritRating" or stat == "rangedCritRating" or stat == "spellCritRating" then return w.critRating or 0 end
   return w[stat] or 0
 end
 
--- score a bare stat block (site Sl) — reused for items and set bonuses
+-- score a bare stat block — reused for items and set bonuses
 local function scoreStats(st, w)
   local s = 0
   if st then for k, v in pairs(st) do if v ~= 0 then s = s + v * weightFor(w, k) end end end
   return s
 end
 
--- weapon dps (site La): (min+max)/2/speed, else 0
+-- weapon dps: (min+max)/2/speed, else 0
 local function weaponDps(it)
   local d = it.dmg
   if d and d[3] and d[3] > 0 then return (d[1] + d[2]) / 2 / d[3] end
   return 0
 end
 
--- per-item score (site gt). scoresWeapon adds weapon dps. Affix stats scored with the CoA rules:
+-- per-item score. scoresWeapon adds weapon dps. Affix stats scored with the CoA rules:
 -- spellDamage -> amt*spellPower, healingPower -> 0 (no CoA healer spec), else amt*weightFor.
 local function scoreItem(it, w, scoresWeapon)
   local s = scoreStats(it.st, w)
@@ -50,7 +49,7 @@ local function scoreItem(it, w, scoresWeapon)
 end
 SmartBiS_ScoreItem = scoreItem
 
--- set-bonus multiplier p (site x4). gear = {slot=item}. base = sum of scores (passed in).
+-- set-bonus multiplier. gear = {slot=item}. base = sum of scores (passed in).
 local function setBonusMult(gear, w, base)
   local counts = {}
   for _, it in pairs(gear) do if it and it.sk then counts[it.sk] = (counts[it.sk] or 0) + 1 end end
