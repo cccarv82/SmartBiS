@@ -10,7 +10,7 @@ to check what to gear for.
 > and bugs. Reports and suggestions are very welcome (see below)!
 
 <p align="center">
-  <img src="[https://github.com/user-attachments/assets/244c8000-bc66-4ea5-b8f3-90322a92cbc3](https://github.com/user-attachments/assets/abfe3d3b-bcb1-48c4-a842-6a14645b4a98)" alt="SmartBiS in-game" width="720">
+  <img src="[[https://github.com/user-attachments/assets/244c8000-bc66-4ea5-b8f3-90322a92cbc3](https://github.com/user-attachments/assets/abfe3d3b-bcb1-48c4-a842-6a14645b4a98)](https://github.com/user-attachments/assets/abfe3d3b-bcb1-48c4-a842-6a14645b4a98)" alt="SmartBiS in-game" width="720">
 </p>
 
 ## Features
