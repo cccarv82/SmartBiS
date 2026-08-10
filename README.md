@@ -20,6 +20,8 @@ to check what to gear for.
   character; one click on **Default** brings back the standard weights.
 - **Optimized loadouts** for all 21 classes / 70 specs, across every phase
   (Pre-Raid → Phase 5) and PvE / PvP.
+- **🌱 Leveling mode (new, early)** — cycle the Phase button to **Leveling** to see the best
+  gear for your *current character level* while you level up.
 - **Auto-detects your class & spec** — `/sbis` opens straight to your character.
 - **Recommended enchant per slot**.
 - **"Where it drops"** — the source of every item, right on its card.
@@ -57,7 +59,7 @@ When reporting a bug, it helps to include:
 
 ## Credits
 
-- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)**
+- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)** — used with the author's permission.
 
 SmartBiS is a fan-made companion and is not affiliated with Bisbeard, Ascension,
 Conquest of Azeroth, or Blizzard Entertainment.

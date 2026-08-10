@@ -6,7 +6,8 @@ local COL1 = { "Head", "Neck", "Shoulders", "Back", "Chest", "Wrists", "Main Han
 local COL2 = { "Hands", "Waist", "Legs", "Feet", "Finger 1", "Finger 2", "Trinket 1", "Trinket 2", "Ranged" }
 
 -- CoA phase → content: raids are cumulative.
-local PHASE_LABEL = { [0] = "Pre-Raid", [1] = "P1: Zul'Gurub", [2] = "P2: Molten Core", [3] = "P3: Blackwing Lair", [4] = "P4: Ahn'Qiraj", [5] = "P5: Naxxramas" }
+local PHASE_LABEL = { [0] = "Pre-Raid", [1] = "P1: Zul'Gurub", [2] = "P2: Molten Core", [3] = "P3: Blackwing Lair", [4] = "P4: Ahn'Qiraj", [5] = "P5: Naxxramas", [6] = "Leveling" }
+local LEVELING_PHASE = 6
 local INV_SLOTS = { 1, 2, 3, 15, 5, 9, 10, 6, 7, 8, 11, 12, 13, 14, 16, 17, 18 }
 local Q = {
   Poor = "ff9d9d9d", Common = "ffffffff", Uncommon = "ff1eff00", Rare = "ff0070dd",
@@ -85,9 +86,9 @@ end
 -- Custom-weights recompute (M2): run the in-game engine and map its gear to card tuples.
 -- Endgame only (candidate pool is all-phase, PvE). Returns {slot = {id,name,ver,set,source,...}} or nil.
 local ENGINE_SLOTS = { "Head", "Neck", "Shoulders", "Back", "Chest", "Wrists", "Hands", "Waist", "Legs", "Feet", "Finger 1", "Finger 2", "Trinket 1", "Trinket 2", "Main Hand", "Off Hand", "Ranged" }
-local function recomputeSlots(key, weights, phase, mode)
+local function recomputeSlots(key, weights, phase, mode, maxLevel)
   if not (SmartBiS_Solve and SmartBiS_Cands and SmartBiS_Cands[key]) then return nil end
-  local ok, gear = pcall(SmartBiS_Solve, key, weights, phase, mode)
+  local ok, gear = pcall(SmartBiS_Solve, key, weights, phase, mode, maxLevel)
   if not ok or type(gear) ~= "table" then return nil end
   local out = {}
   for _, slot in ipairs(ENGINE_SLOTS) do
@@ -232,6 +233,7 @@ local function buildEditor(parent)
     if SmartBiSSaved.weights then SmartBiSSaved.weights[key] = nil end
     populateEditor(key); SmartBiS_Refresh()
   end)
+  ed:Hide()   -- start hidden; the Weights button toggles it (otherwise the first click just closes it)
   editor = ed
   return ed
 end
@@ -287,7 +289,7 @@ local function ensureWindow()
   phase:SetScript("OnClick", function(_, button)
     local p = SmartBiSSaved.phase or 0
     p = (button == "RightButton") and (p - 1) or (p + 1)
-    if p > 5 then p = 0 elseif p < 0 then p = 5 end
+    if p > 6 then p = 0 elseif p < 0 then p = 6 end
     SmartBiSSaved.phase = p; SmartBiS_Refresh()
   end)
   f.phaseBtn = phase
@@ -309,6 +311,7 @@ function SmartBiS_Refresh()
   f.modeBtn:SetText(mode == "pvp" and "PvP" or "PvE")
   f.phaseBtn:SetText(PHASE_LABEL[phase] or "?")
   f.specBtn:SetText(key and key:gsub("^.-|", "") or "Spec")
+  if editor and editor:IsShown() then populateEditor(key) end   -- keep the weights editor in sync with the spec
 
   for _, c in ipairs(f.cards) do c:Hide() end
   local data = key and SmartBiS_DB and SmartBiS_DB[key]
@@ -316,16 +319,24 @@ function SmartBiS_Refresh()
   local col = (mode == "pvp") and "|cffff8888" or "|cff88ccff"
   f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r  " .. col .. (mode == "pvp" and "PvP · " or "") .. (PHASE_LABEL[phase] or "") .. "|r")
 
-  local tbl = (mode == "pvp") and data.pvp or data.pve
-  local slots = tbl and tbl[phase]
-
-  -- custom weights → recompute BiS live via the in-game engine (respects spec, phase and mode)
   local custom = SmartBiSSaved.weights and SmartBiSSaved.weights[key]
-  if custom then
-    local rec = recomputeSlots(key, custom, phase, mode)
-    if rec then
-      slots = rec
-      f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r  " .. col .. (mode == "pvp" and "PvP · " or "") .. (PHASE_LABEL[phase] or "") .. "|r  |cff00ff88custom|r")
+  local slots
+  if phase == LEVELING_PHASE then
+    -- Leveling: recompute the best gear usable at the character's CURRENT level (auto-detected), PvE.
+    local lvl = (UnitLevel and UnitLevel("player")) or 60
+    local w = custom or (SmartBiS_DefaultWeights and SmartBiS_DefaultWeights[key])
+    if w then slots = recomputeSlots(key, w, nil, "pve", lvl) end
+    f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r  |cff88ffaaLeveling · Lv " .. lvl .. "|r" .. (custom and "  |cff00ff88custom|r" or ""))
+  else
+    -- normal phases: baked DB, or a live recompute when custom weights are set
+    local tbl = (mode == "pvp") and data.pvp or data.pve
+    slots = tbl and tbl[phase]
+    if custom then
+      local rec = recomputeSlots(key, custom, phase, mode)
+      if rec then
+        slots = rec
+        f.title:SetText(key:gsub("|", "  |cffaaaaaa") .. "|r  " .. col .. (mode == "pvp" and "PvP · " or "") .. (PHASE_LABEL[phase] or "") .. "|r  |cff00ff88custom|r")
+      end
     end
   end
 
@@ -444,26 +455,36 @@ local function createMinimapButton()
 end
 
 ----------------------------------------------------------------------
-local function autodetect()
-  if manualSpec then return end
+local function autodetect()   -- returns true when the spec is confidently resolved (stop retrying)
+  if manualSpec then return true end
   local key, confident = detectKey()
-  if not key then return end
+  if not key then return false end
   local savedClass = SmartBiSSaved.spec and SmartBiSSaved.spec:match("^(.-)|")
   local myClass = key:match("^(.-)|")
   if (confident or not SmartBiSSaved.spec or savedClass ~= myClass) and SmartBiSSaved.spec ~= key then
     SmartBiSSaved.spec = key
     if win and win:IsShown() then SmartBiS_Refresh() end
   end
+  return confident
+end
+
+-- The client often doesn't know the (custom) spec at login; UnitSpecAndIcon returns the class name
+-- until it's ready. Retry every ~1.2s until we get a real spec (or give up after ~15s).
+local function autodetectDriver(n)
+  if autodetect() then return end
+  n = (n or 0) + 1
+  if n <= 12 and C_Timer and C_Timer.After then C_Timer.After(1.2, function() autodetectDriver(n) end) end
 end
 
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("PLAYER_LOGIN"); ev:RegisterEvent("PLAYER_ENTERING_WORLD")
+for _, e in ipairs({ "PLAYER_TALENT_UPDATE", "ACTIVE_TALENT_GROUP_CHANGED", "CHARACTER_POINTS_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, event)
   SmartBiSSaved = SmartBiSSaved or {}
   SmartBiSSaved.mode = SmartBiSSaved.mode or "pve"
   SmartBiSSaved.phase = SmartBiSSaved.phase or 0
-  createMinimapButton(); autodetect()
-  if C_Timer and C_Timer.After then C_Timer.After(1.5, autodetect); C_Timer.After(4, autodetect) end
+  createMinimapButton()
+  autodetectDriver(0)   -- persistent retry until the spec is known
   if event == "PLAYER_LOGIN" then
     local n = 0; for _ in pairs(SmartBiS_DB or {}) do n = n + 1 end
     print(("|cff00ccffSmartBiS|r %d specs. |cff00ff00/sbis|r"):format(n))

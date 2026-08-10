@@ -75,9 +75,20 @@ local ARMOR = { "Head", "Neck", "Shoulders", "Back", "Chest", "Wrists", "Hands",
 -- Pre-Raid (phase 0) also exclude raid drops (it.rd) — pre-raid = dungeon/rep/craft/etc, no raids.
 local CUR_PHASE = 5
 local CUR_PRERAID = false
+local CUR_LEVELING = false   -- leveling mode: gate by required level instead of phase
+local CUR_MAXLEVEL = 60
 local function itemsOf(uids)
   local out = {}
-  if uids then for _, uid in ipairs(uids) do local it = Items[uid]; if it and (it.ph or 0) <= CUR_PHASE and not (CUR_PRERAID and it.rd) then out[#out + 1] = it end end end
+  if uids then for _, uid in ipairs(uids) do
+    local it = Items[uid]
+    if it then
+      if CUR_LEVELING then
+        if (it.rl or 0) <= CUR_MAXLEVEL then out[#out + 1] = it end
+      elseif (it.ph or 0) <= CUR_PHASE and not (CUR_PRERAID and it.rd) then
+        out[#out + 1] = it
+      end
+    end
+  end end
   return out
 end
 
@@ -102,13 +113,15 @@ local function totalScore(gear, w)
   return base * (1 + setBonusMult(gear, w, base))
 end
 
-function SmartBiS_Solve(specKey, w, phase, mode)
+function SmartBiS_Solve(specKey, w, phase, mode, maxLevel)
   Items = SmartBiS_Items; Affix = SmartBiS_Affix; Styles = SmartBiS_Styles; Prof = SmartBiS_Prof; SetBonus = SmartBiS_SetBonus
-  CUR_PRERAID = (phase or 5) == 0          -- Pre-Raid: phase-1 gear minus raid drops
+  CUR_LEVELING = maxLevel ~= nil           -- leveling: use the level pool, gate by required level
+  CUR_MAXLEVEL = maxLevel or 60
+  CUR_PRERAID = (not CUR_LEVELING) and (phase or 5) == 0   -- Pre-Raid: phase-1 gear minus raid drops
   CUR_PHASE = phase or 5
   if CUR_PHASE < 1 then CUR_PHASE = 1 end   -- items are phase 1..5; Pre-Raid maps to phase 1 (+ no raid)
   local perSpec = SmartBiS_Cands[specKey]
-  local cands = perSpec and (perSpec[mode or "pve"] or perSpec.pve or perSpec)
+  local cands = perSpec and (CUR_LEVELING and perSpec.lvl or (perSpec[mode or "pve"] or perSpec.pve or perSpec))
   if not cands then return nil end
   local ranked = {}
   for _, slot in ipairs(ARMOR) do ranked[slot] = sortByScore(itemsOf(cands[slot]), w, false) end
