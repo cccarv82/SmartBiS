@@ -59,7 +59,7 @@ When reporting a bug, it helps to include:
 
 ## Credits
 
-- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)** — used with the author's permission.
+- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)**
 
 SmartBiS is a fan-made companion and is not affiliated with Bisbeard, Ascension,
 Conquest of Azeroth, or Blizzard Entertainment.
