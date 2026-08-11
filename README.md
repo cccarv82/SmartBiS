@@ -10,7 +10,7 @@ to check what to gear for.
 > and bugs. Reports and suggestions are very welcome (see below)!
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/abfe3d3b-bcb1-48c4-a842-6a14645b4a98" alt="SmartBiS in-game" width="720">
+  <img src="https://github.com/user-attachments/assets/244c8000-bc66-4ea5-b8f3-90322a92cbc3" alt="SmartBiS in-game" width="720">
 </p>
 
 ## Features
@@ -25,8 +25,8 @@ to check what to gear for.
 - **Auto-detects your class & spec** — `/sbis` opens straight to your character.
 - **Recommended enchant per slot**.
 - **"Where it drops"** — the source of every item, right on its card.
-- **Have / need check** — green = equipped, gold = in your bags, gray = missing,
-  with an `Equipped X/Y` counter.
+- **Have / need check** — green = equipped, gold = in your bags, **blue = you own another
+  version** (almost BiS — just upgrade the tier), gray = missing, with a counter.
 - **Tooltip anywhere** — hover any item (drop, bag, chat link, AH) and it tells
   you if it's BiS for your spec, and in which phases.
 - **Minimap button** + `/sbis` slash command.
@@ -59,7 +59,7 @@ When reporting a bug, it helps to include:
 
 ## Credits
 
-- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)**
+- Item list and stat weights: **[Bisbeard](https://coa.bisbeard.com/)** — used with the author's permission.
 
 SmartBiS is a fan-made companion and is not affiliated with Bisbeard, Ascension,
 Conquest of Azeroth, or Blizzard Entertainment.

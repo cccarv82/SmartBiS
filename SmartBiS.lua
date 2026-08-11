@@ -64,14 +64,23 @@ local function detectKey()
   return classSpecs[1], false
 end
 
+local function nameFromLink(link) return link and link:match("%[(.-)%]") end
 local function ownedSets()
-  local equipped, bags = {}, {}
-  for _, s in ipairs(INV_SLOTS) do local id = GetInventoryItemID("player", s); if id then equipped[id] = true end end
+  -- equipped/bags: exact item ids you own. names: base names you own (any version) — CoA has many
+  -- upgrade tiers of the same item (e.g. Mythic +2 vs +10), so owning ANY version = "almost BiS".
+  local equipped, bags, names = {}, {}, {}
+  for _, s in ipairs(INV_SLOTS) do
+    local id = GetInventoryItemID("player", s)
+    if id then equipped[id] = true; local nm = nameFromLink(GetInventoryItemLink("player", s)); if nm then names[nm] = true end end
+  end
   for bag = 0, 4 do
     local n = GetContainerNumSlots(bag) or 0
-    for slot = 1, n do local id = GetContainerItemID(bag, slot); if id then bags[id] = true end end
+    for slot = 1, n do
+      local id = GetContainerItemID(bag, slot)
+      if id then bags[id] = true; local nm = nameFromLink(GetContainerItemLink(bag, slot)); if nm then names[nm] = true end end
+    end
   end
-  return equipped, bags
+  return equipped, bags, names
 end
 
 local function styleButton(b)
@@ -130,7 +139,7 @@ local function createCard(parent)
   return c
 end
 
-local function updateCard(c, slot, it, eq, bag)
+local function updateCard(c, slot, it, eq, bag, names)
   if not it then
     c.itemId, c.enchName = nil, nil
     c.icon:SetTexture("Interface\\PaperDoll\\UI-Backpack-EmptySlot"); c.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
@@ -151,9 +160,10 @@ local function updateCard(c, slot, it, eq, bag)
   else
     c.ench:SetText("")
   end
-  if eq[it[1]] then c.strip:SetTexture(0.15, 0.9, 0.15)
-  elseif bag[it[1]] then c.strip:SetTexture(0.95, 0.75, 0.1)
-  else c.strip:SetTexture(0.28, 0.28, 0.34) end
+  if eq[it[1]] then c.strip:SetTexture(0.15, 0.9, 0.15)            -- exact BiS, equipped
+  elseif bag[it[1]] then c.strip:SetTexture(0.95, 0.75, 0.1)        -- exact BiS, in bags
+  elseif names and names[it[2]] then c.strip:SetTexture(0.2, 0.6, 1.0)  -- own another version (almost BiS)
+  else c.strip:SetTexture(0.28, 0.28, 0.34) end                    -- missing
   c:Show()
 end
 
@@ -347,8 +357,8 @@ function SmartBiS_Refresh()
     slots = setmetatable({ ["Off Hand"] = false }, { __index = slots })
   end
 
-  local eq, bag = ownedSets()
-  local eqN, ownN, total = 0, 0, 0
+  local eq, bag, names = ownedSets()
+  local eqN, ownN, closeN, total = 0, 0, 0, 0
   local Y0 = -70
   local function column(list, x)
     for i, slot in ipairs(list) do
@@ -358,14 +368,16 @@ function SmartBiS_Refresh()
       local it = slots[slot]
       if it then
         total = total + 1
-        if eq[it[1]] then eqN = eqN + 1; ownN = ownN + 1 elseif bag[it[1]] then ownN = ownN + 1 end
+        if eq[it[1]] then eqN = eqN + 1; ownN = ownN + 1
+        elseif bag[it[1]] then ownN = ownN + 1
+        elseif names[it[2]] then closeN = closeN + 1 end   -- own another version
       end
-      updateCard(card, slot, it, eq, bag)
+      updateCard(card, slot, it, eq, bag, names)
     end
   end
   column(COL1, 14)
   column(COL2, 14 + CW + 14)
-  f.footer:SetText(("|cffaaaaaaEquipped %d/%d · Owned %d/%d    |r|cff26e626\226\150\160|r|cffaaaaaa equip  |r|cfff2bf1a\226\150\160|r|cffaaaaaa bag  |r|cff474747\226\150\160|r|cffaaaaaa missing|r"):format(eqN, total, ownN, total))
+  f.footer:SetText(("|cffaaaaaaEquipped %d/%d · Owned %d/%d · Almost %d    |r|cff26e626\226\150\160|r|cffaaaaaa equip  |r|cfff2bf1a\226\150\160|r|cffaaaaaa bag  |r|cff3399ff\226\150\160|r|cffaaaaaa almost  |r|cff474747\226\150\160|r|cffaaaaaa missing|r"):format(eqN, total, ownN, total, closeN))
 end
 
 ----------------------------------------------------------------------
